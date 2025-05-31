@@ -8,6 +8,39 @@
 This is a browser extension designed for CUNY websites, built with [WXT](https://wxt.dev/), React, and Material-UI.
 
 ---
+## 🤺 Usage
+
+### Option1: Install in chrome web store
+ Not available yet.
+
+[Download better-cuny](https://google.com)
+
+### Option2: Compile Source Code 🛠️
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/chengxilo/better-cuny.git
+    ```
+
+2. Install dependencies:
+    ```bash
+    pnpm install
+    ```
+
+3. Build the source code:
+    ```bash
+    pnpm run build
+    ```
+
+4. Open `chrome://extensions/` in your browser, enable `Developer mode`, click `Load unpacked`,
+   and select the `.output/chrome-mv3` folder in the **project directory**.
+
+
+### Options3
+Download `chrome-mv3.zip` in your browser, enable `Developer mode`, click `Load unpacked`,
+and select the extracted directory. (Actually it is almost the same as Option 2-step 4)
+
+---
 
 ## 😎 Features
 
