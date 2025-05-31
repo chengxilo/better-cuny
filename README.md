@@ -10,10 +10,8 @@ This is a browser extension designed for CUNY websites, built with [WXT](https:/
 ---
 ## 🤺 Usage
 
-### Option1: Install in chrome web store
- Not available yet.
-
-[Download better-cuny](https://google.com)
+### Option1: Install in Chrome Web Store
+[Download better-cuny](https://chromewebstore.google.com/detail/better-cuny/agocaomnajflfpeefnofioffegkkcoic)
 
 ### Option2: Compile Source Code 🛠️
 
