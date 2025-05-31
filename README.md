@@ -13,7 +13,7 @@ This is a browser extension designed for CUNY websites, built with [WXT](https:/
 ### Option1: Install in chrome web store
  Not available yet.
 
-[Download better-cuny](https://google.com)
+[Download better-cuny](https://chromewebstore.google.com/detail/better-cuny/agocaomnajflfpeefnofioffegkkcoic)
 
 ### Option2: Compile Source Code 🛠️
 
