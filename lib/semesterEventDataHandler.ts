@@ -56,6 +56,54 @@ async function setSemesterEventData(data: SemesterEventData): Promise<void> {
     await storage.setItem<SemesterEventData>(semesterEventStorageKey, data)
 }
 
+class tableRow {
+    date_str: string;
+    description: string;
+
+    constructor(date_str: string, description: string) {
+        this.date_str = date_str;
+        this.description = description;
+    }
+}
+
+/**
+ * Parse tableRow array to events map.
+ * @param tableRows tableRow array extracted from web page.
+ */
+function parseRowsToEvents(tableRows : tableRow[]): { [key: string]: Array<string> } {
+    const events: { [key: string]: Array<string> } = {};
+    tableRows.forEach((row) => {
+        // Possible values for date_str 09/16/2025 or 09/22/2025-09/24/2025
+        const date_str = row.date_str;
+        console.log(date_str);
+        const description = row.description;
+        const description_splits = description.split('\n');
+        // two different kind of value
+        if (/[–-]/.test(date_str)) {
+            // time range, like 09/22/2025-09/24/2025
+            const lis = date_str.split(/[–-]/).map(e => e.trim());
+            const start = fromStr(lis[0]);
+            const end = fromStr(lis[1])
+            for (let d = start; d.getTime() <= end.getTime(); d = addDay(d)) {
+
+                if (toStr(d) in events) {
+                    events[toStr(d)] = [...events[toStr(d)], ...description_splits];
+                } else {
+                    events[toStr(d)] = description_splits
+                }
+            }
+        } else {
+            // one single day, like 09/16/2025
+            if (date_str in events) {
+                events[date_str] = [...events[date_str], ...description_splits]
+            } else {
+                events[date_str] = description_splits
+            }
+        }
+    });
+    return events;
+}
+
 /**
  * Parse an academic calendar table into a map of events.
  * @param $ The Cheerio API instance used for DOM traversal
@@ -63,41 +111,15 @@ async function setSemesterEventData(data: SemesterEventData): Promise<void> {
  * @returns An object where keys are date strings (MM/DD/YYYY) and values are arrays of event descriptions
  */
 function parseCalendarTable($: cheerio.CheerioAPI, table: Element): { [key: string]: Array<string> } {
-    const events: { [key: string]: Array<string> } = {};
-    $(table).find('tr').each((_, tr) => {
+    const tableRows = $(table).find('tr').map(function (_, tr) {
         const tds = $(tr).find('td');
+        if (tds.length < 3) return null
+        const date_str = $(tds[0]).text().trim();
         const description = $(tds[2]).text().trim();
-        if (tds.length >= 3) {
-            // Possible values for date_str 09/16/2025 or 09/22/2025-09/24/2025
-            const date_str = $(tds[0]).text().trim();
-            console.log(date_str);
+        return new tableRow(date_str, description);
+    }).toArray().filter((row) => row != null);
 
-            const description_splits = description.split('\n');
-            // two different kind of value
-            if (/[–-]/.test(date_str)) {
-                // time range, like 09/22/2025-09/24/2025
-                const lis = date_str.split(/[–-]/).map(e => e.trim());
-                const start = fromStr(lis[0]);
-                const end = fromStr(lis[1])
-                for (let d = start; d.getTime() <= end.getTime(); d = addDay(d)) {
-
-                    if (toStr(d) in events) {
-                        events[toStr(d)] = [...events[toStr(d)], ...description_splits];
-                    } else {
-                        events[toStr(d)] = description_splits
-                    }
-                }
-            } else {
-                // one single day, like 09/16/2025
-                if (date_str in events) {
-                    events[date_str] = [...events[date_str], ...description_splits]
-                } else {
-                    events[date_str] = description_splits
-                }
-            }
-        }
-    });
-    return events;
+    return parseRowsToEvents(tableRows)
 }
 
 // fetch the cuny calendar web page, and use cheerio to extract those information we need.
