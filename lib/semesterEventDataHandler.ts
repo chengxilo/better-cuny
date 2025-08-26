@@ -3,6 +3,7 @@ import {SemesterEventData} from "@/type/semesterEventData.ts";
 import {addDay, fromStr, toStr} from "@/lib/timeHandler.ts";
 import axios from "axios";
 import * as cheerio from 'cheerio';
+import {Element} from "domhandler";
 
 const semesterEventStorageKey = "local:semesterEvents"
 
@@ -55,6 +56,50 @@ async function setSemesterEventData(data: SemesterEventData): Promise<void> {
     await storage.setItem<SemesterEventData>(semesterEventStorageKey, data)
 }
 
+/**
+ * Parse an academic calendar table into a map of events.
+ * @param $ The Cheerio API instance used for DOM traversal
+ * @param table The table element selected via Cheerio
+ * @returns An object where keys are date strings (MM/DD/YYYY) and values are arrays of event descriptions
+ */
+function parseCalendarTable($: cheerio.CheerioAPI, table: Element): { [key: string]: Array<string> } {
+    const events: { [key: string]: Array<string> } = {};
+    $(table).find('tr').each((_, tr) => {
+        const tds = $(tr).find('td');
+        const description = $(tds[2]).text().trim();
+        if (tds.length >= 3) {
+            // Possible values for date_str 09/16/2025 or 09/22/2025-09/24/2025
+            const date_str = $(tds[0]).text().trim();
+            console.log(date_str);
+
+            const description_splits = description.split('\n');
+            // two different kind of value
+            if (/[–-]/.test(date_str)) {
+                // time range, like 09/22/2025-09/24/2025
+                const lis = date_str.split(/[–-]/).map(e => e.trim());
+                const start = fromStr(lis[0]);
+                const end = fromStr(lis[1])
+                for (let d = start; d.getTime() <= end.getTime(); d = addDay(d)) {
+
+                    if (toStr(d) in events) {
+                        events[toStr(d)] = [...events[toStr(d)], ...description_splits];
+                    } else {
+                        events[toStr(d)] = description_splits
+                    }
+                }
+            } else {
+                // one single day, like 09/16/2025
+                if (date_str in events) {
+                    events[date_str] = [...events[date_str], ...description_splits]
+                } else {
+                    events[date_str] = description_splits
+                }
+            }
+        }
+    });
+    return events;
+}
+
 // fetch the cuny calendar web page, and use cheerio to extract those information we need.
 async function fetchCUNYCalendar(): Promise<{ [key: string]: { [key: string]: Array<string> } } | undefined> {
     const headers = {
@@ -77,45 +122,10 @@ async function fetchCUNYCalendar(): Promise<{ [key: string]: { [key: string]: Ar
 
     const semesterEvents: { [key: string]: { [key: string]: Array<string> } } = {};
     $('table').each((index, table) => {
-        const events: { [key: string]: Array<string> } = {};
-        $(table).find('tr').each((_, tr) => {
-            const tds = $(tr).find('td');
-            const description = $(tds[2]).text().trim();
-            if (tds.length >= 3) {
-                // Possible values for date_str 09/16/2025 or 09/22/2025-09/24/2025
-                const date_str = $(tds[0]).text().trim();
-                console.log(date_str);
-
-                const description_splits = description.split('\n');
-                // two different kind of value
-                if (/[–-]/.test(date_str)) {
-                    // time range, like 09/22/2025-09/24/2025
-                    const lis = date_str.split(/[–-]/).map(e => e.trim());
-                    const start = fromStr(lis[0]);
-                    const end = fromStr(lis[1])
-                    for (let d = start; d.getTime() <= end.getTime(); d = addDay(d)) {
-
-                        if (toStr(d) in events) {
-                            events[toStr(d)] = [...events[toStr(d)], ...description_splits];
-                        } else {
-                            events[toStr(d)] = description_splits
-                        }
-                    }
-                } else {
-                    // one single day, like 09/16/2025
-                    if (date_str in events) {
-                        events[date_str] = [...events[date_str], ...description_splits]
-                    } else {
-                        events[date_str] = description_splits
-                    }
-                }
-            }
-        });
-        semesterEvents[tableTitles[index]] = events;
+        semesterEvents[tableTitles[index]] = parseCalendarTable($, table);
     });
     console.log("semester events: ", semesterEvents);
     return semesterEvents
 }
 
-
-export {getSemesterEventData, fetchCUNYCalendar}
+export {getSemesterEventData, fetchCUNYCalendar, parseCalendarTable};
