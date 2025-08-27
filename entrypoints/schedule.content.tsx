@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import {getSemesterEventData} from "@/lib/semesterEventDataHandler.ts";
 import {weekdayFromAbbreviation} from "@/type/weekday.ts";
 import {addDay, toStr} from "@/lib/timeHandler.ts";
+import {genCalendarCSV, generateCSV} from "@/lib/google-calendar.ts";
+import Event from "@/type/event.ts"
 
 class CourseInfo {
     constructor(
@@ -84,50 +86,6 @@ function parseClassStr(str: string): Array<Class> {
     })
 }
 
-// A class map to the Google Calendar csv file requirement.
-class Event {
-    public startDate: string;
-    public startTime: string;
-    public endDate: string;
-    public endTime: string;
-
-    constructor(
-        public subject: string,
-        startDateTime: Date,
-        endDateTime: Date,
-        public location: string,
-        public description: string = "",
-        public allDayEvent: boolean = false,
-        public private_: boolean = false,
-    ) {
-        console.log("New Event with params: ", subject, startDateTime, endDateTime, location);
-        const options: Intl.DateTimeFormatOptions = {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "numeric",
-            hour12: true,
-            minute: "2-digit",
-        }
-        const parse = (date: Date) => {
-            const pattern = /^(\d+\/\d+\/\d{4}), (\d+:\d+ (AM|PM))$/
-            const dateStr = date.toLocaleDateString("en-US", options);
-            console.log(dateStr)
-            const matches = dateStr.match(pattern)
-            return {
-                date: matches![1],
-                time: matches![2],
-            }
-        }
-        const startParseRes = parse(startDateTime);
-        const endParseRes = parse(endDateTime);
-        this.startDate = startParseRes.date;
-        this.startTime = startParseRes.time;
-        this.endDate = endParseRes.date;
-        this.endTime = endParseRes.time;
-    }
-}
-
 function getCourses() {
     const courseBoxes = document.querySelectorAll('.course_box')
     const courses = new Map<string, CourseInfo>()
@@ -169,26 +127,6 @@ function getCourses() {
         courses.set(code, courseInfo)
     }
     return courses
-}
-
-function generateCSV(data: any[], headers: string[], filename: string = "data.csv") {
-    console.log(data)
-    console.log(headers)
-    console.log(data[0]["location"])
-    const csvContent = [
-        headers.join(','), // header row
-        ...data.map(row => headers.map(header => `"${row[header]}"`).join(',')) // data rows
-    ].join('\r\n');
-
-    const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-
-    URL.revokeObjectURL(url);
 }
 
 export default defineContentScript({
@@ -278,25 +216,16 @@ export default defineContentScript({
                                     course.code,
                                     startDateTime,
                                     endDateTime,
-                                    course.location,
-                                    course.title,
+                                    {
+                                        location: course.location,
+                                        description: course.title,
+                                    }
                                 )
                                 allEvents.push(event)
                             })
                         })
 
-                        // parse all events to csv file.
-                        const headers = ["Subject", "Start Date", "Start Time", "End Date", "End Time", "Description", "Location"]
-                        const content = allEvents.map(value => ({
-                            "Subject": value.subject,
-                            "Start Date": value.startDate,
-                            "Start Time": value.startTime,
-                            "End Date": value.endDate,
-                            "End Time": value.endTime,
-                            "Description": value.description,
-                            "Location": value.location,
-                        }))
-                        generateCSV(content, headers, "calendar.csv")
+                        genCalendarCSV(allEvents, "calendar.csv")
                     })
                     console.log(courses)
                 }
