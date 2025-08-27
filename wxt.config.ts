@@ -10,7 +10,8 @@ export default defineConfig({
     permissions: ["storage"],
     host_permissions: [
         "https://sb.cunyfirst.cuny.edu/*",// BrightSpace
-        "https://ssologin.cuny.edu/cuny.html" // CUNY login page
+        "https://ssologin.cuny.edu/cuny.html", // CUNY login page
+        "https://www.cuny.edu/academics/academic-calendars/" // CUNY academic calendars
     ]
   }
 });

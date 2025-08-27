@@ -56,7 +56,7 @@ async function setSemesterEventData(data: SemesterEventData): Promise<void> {
     await storage.setItem<SemesterEventData>(semesterEventStorageKey, data)
 }
 
-class tableRow {
+class TableRow {
     date_str: string;
     description: string;
 
@@ -70,7 +70,7 @@ class tableRow {
  * Parse tableRow array to events map.
  * @param tableRows tableRow array extracted from web page.
  */
-function parseRowsToEvents(tableRows : tableRow[]): { [key: string]: Array<string> } {
+function parseRowsToEvents(tableRows : TableRow[]): { [key: string]: Array<string> } {
     const events: { [key: string]: Array<string> } = {};
     tableRows.forEach((row) => {
         // Possible values for date_str 09/16/2025 or 09/22/2025-09/24/2025
@@ -116,7 +116,7 @@ function parseCalendarTable($: cheerio.CheerioAPI, table: Element): { [key: stri
         if (tds.length < 3) return null
         const date_str = $(tds[0]).text().trim();
         const description = $(tds[2]).text().trim();
-        return new tableRow(date_str, description);
+        return new TableRow(date_str, description);
     }).toArray().filter((row) => row != null);
 
     return parseRowsToEvents(tableRows)
@@ -150,4 +150,4 @@ async function fetchCUNYCalendar(): Promise<{ [key: string]: { [key: string]: Ar
     return semesterEvents
 }
 
-export {getSemesterEventData, fetchCUNYCalendar, parseCalendarTable};
+export {getSemesterEventData, fetchCUNYCalendar, parseCalendarTable, parseRowsToEvents, TableRow};
