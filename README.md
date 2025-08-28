@@ -61,15 +61,22 @@ Currently, we support:
 - [😏 Automatically Login](#-automatically-login)
 - <font color="orange">**It's always encouraged to post the feature you want on [GitHub](https://github.com/chengxilo/better-cuny/issues)**</font>
 
-### 📆 Export Schedule to CSV
+### 📆 Export Schedule/Academic Calendar to CSV
 
 On your Schedule Builder page, click the `EXPORT` button:
 
 ![img.png](assets/docs/img.png)
 
+You can also download academic calendars from [Academic Calendar](https://www.cuny.edu/academics/academic-calendars/) by clicking the extra download icon button on each table and import them.
+![img.png](assets/docs/academic-calendar.png)
+
 This will download a `.csv` file, which you can import into Google Calendar.
 
 ![img.png](assets/docs/excel.png)
+
+After importing both schedule and academic calendar, this is what you will get.
+
+![img.png](assets/docs/after-import.png)
 
 Unlike the default Schedule Builder, this extension provides **more accurate results** by combining data from your 
 webpage and the official [CUNY Academic Calendar](https://www.cuny.edu/academics/academic-calendars/):
