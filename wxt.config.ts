@@ -6,7 +6,7 @@ export default defineConfig({
   manifest: {
     name: "Better CUNY",
     description: "Provide additional features for the CUNY website",
-    version: "0.0.2",
+    version: "0.0.3",
     permissions: ["storage"],
     host_permissions: [
         "https://sb.cunyfirst.cuny.edu/*",// BrightSpace
