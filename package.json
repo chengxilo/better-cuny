@@ -2,7 +2,7 @@
   "name": "better-cuny",
   "description": "Provide additional features for the CUNY website",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.4",
   "type": "module",
   "scripts": {
     "dev": "wxt",
