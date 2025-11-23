@@ -67,7 +67,8 @@ export class SemesterEventData {
                     const pattern = /.*?follow.*?(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday).*?$/
                     const followWeek = event.match(pattern)![1]
                     const weekday = weekdayFromFullName(followWeek)
-                    result.set(date, weekday)
+                    // we need to let 01/01/2026 become 1/1/2026, to handle it correctly later.
+                    result.set(new Date(date).toLocaleDateString("en-US"), weekday)
                 }
             }
         }
