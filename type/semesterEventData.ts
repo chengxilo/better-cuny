@@ -37,8 +37,9 @@ export class SemesterEventData {
             for (const event of events) {
                 console.log(`${event}: ${JSON.stringify(event)}`);
                 console.log(event.toLowerCase())
-                if ("no classes scheduled" == event.toLowerCase() || "college closed" == event.toLowerCase()) {
-                    result.push(date)
+
+                if (["no classes scheduled", "college closed", "spring recess"].includes(event.toLowerCase())) {
+                    result.push(date);
                 }
             }
         }
