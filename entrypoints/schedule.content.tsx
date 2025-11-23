@@ -103,9 +103,25 @@ function getCourses() {
         // ex: 1-Writing II
         const title = divs[2].textContent!.split('-')[1]
         console.log("title", title)
-        // ex: Mon : 2:30 PM to 5:25 PM   or   Tue, Thu : 9:55 AM to 11:10 AM
-        const classesStr = divs[4].textContent!.trim()
-        const classes = parseClassStr(classesStr)
+
+        // ex:
+        //
+        // Mon : 2:30 PM to 5:25 PM
+        // <br>
+        //
+        // Tue, Thu : 9:55 AM to 11:10 AM
+        // <br>
+        //
+        // Mon : 5:40 PM to 6:30 PM
+        // <br>
+        // Wed : 5:40 PM to 8:10 PM
+        // <br>
+        //
+        // divs[4].childNodes contains: [text,br,text,br] or [text,br]. We can iterate it,parse and combine class schedules
+        let classesStrs = Array.from(divs[4].childNodes).filter(e => e.nodeType === Node.TEXT_NODE).map(n => n.textContent!.trim())
+        const classes: Class[] = classesStrs
+            .map(str => parseClassStr(str))
+            .flat();
         const tds = courseBox.querySelectorAll('td')
         const divsUnderTds = tds[4].querySelectorAll('div')
         const college = divsUnderTds[0].textContent!
@@ -186,8 +202,6 @@ export default defineContentScript({
                         const classEachDay = new Map<string, Array<ClassWithCode>>()
                         // iterate every single day.
                         for (let d: Date = earliest!; d <= latest!; d = addDay(d, 1)) {
-                            console.log(noScheduleDates.indexOf(toStr(d)) === -1)
-                            console.log(toStr(d))
                             // if this date is in no schedule dates, just ignore it.
                             if (noScheduleDates.indexOf(toStr(d)) !== -1) continue
                             classEachDay.set(d.toLocaleDateString('en-US'), weekSchedule[d.getDay()])
@@ -201,10 +215,8 @@ export default defineContentScript({
                         const allEvents = new Array<Event>()
                         classEachDay.forEach((classes, dateString) => {
                             const d = new Date(dateString)
-                            console.log(classes)
                             classes.forEach(class_ => {
                                 const course = courses.get(class_.courseCode)!
-
                                 // we need to make sure that the class is in the time range of these courses
                                 if (d.getTime() < course.startDate.getTime() || d.getTime() > course.endDate.getTime()) {
                                     return
