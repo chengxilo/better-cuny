@@ -6,11 +6,11 @@ export default defineConfig({
   manifest: {
     name: "Better CUNY",
     description: "Provide additional features for the CUNY website",
-    version: "0.0.5",
+    version: "0.0.6",
     permissions: ["storage"],
     host_permissions: [
         "https://sb.cunyfirst.cuny.edu/*",// BrightSpace
-        "https://ssologin.cuny.edu/cuny.html", // CUNY login page
+        "https://ssologin.cuny.edu/*", // CUNY login page
         "https://www.cuny.edu/academics/academic-calendars/" // CUNY academic calendars
     ]
   }
